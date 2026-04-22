@@ -1,0 +1,31 @@
+control_panel:
+  projectName: 110 Control Panel P -Edited
+  browserTitle: 110 Control Panel P
+  
+  # Control Panel Server ports
+  ports:
+    vite: 7109
+
+
+  # WebSocket configuration
+  websocket:
+    url: ws://127.0.0.1:6110
+    reconnect:
+      initialDelay: 1000
+      maxDelay: 30000
+      backoffMultiplier: 2
+
+  # API configuration
+  api:
+    endpoints:
+      sendRequest: /api/send-request
+    tradingEngineAPI: http://127.0.0.1:5110
+    controlPanelUrl: http://127.0.0.1:5109
+  # Message types
+  messageTypes:
+    applicationState: application_state
+    appConfig: app_config
+  # Footer configuration
+  footer:
+    text: "Project 110 Control Panel Dashboard "
+    link: "https://zoitek.com"
