@@ -35,7 +35,7 @@ from trading_engine import marketdata_helper
 # from trading_engine import chart_helper
 # from trading_engine import position_helper
 # from trading_engine import pnl_helper
-# from trading_engine import user_request_helper
+from trading_engine import user_request_helper
 
 
 from trading_utils import position_router
@@ -94,6 +94,8 @@ class TradingEngine:
 
                 for entry in self.application_state.get('user_input', {}).get('entries', []):
                     symbol = entry.get('symbol')
+                    time_frame = entry.get('time_frame')
+                    quantity = entry.get('quantity')
                     symbol_number += 1
                     unique_run_number = f'{unique_run_number_X}-{symbol_number}'
                     self.application_state['unique_run_number'] = unique_run_number
@@ -119,7 +121,7 @@ class TradingEngine:
                         self.application_state.setdefault('latest_prices', {})[symbol] = current_price
 
                     logger.info(f"Starting get_historical_data for {symbol}")
-                    df = await marketdata_helper.get_historical_data(ib, symbol, contract_month, self.app_config, self.application_state, time_frame='1m', historical_days='3 D')
+                    df = await marketdata_helper.get_historical_data(ib, symbol, contract_month, self.app_config, self.application_state, time_frame=time_frame)
                     logger.info(f"Finished get_historical_data for {symbol}")
                     if df is None or len(df) ==0:
                         logger.warning(f"@@@@@ {symbol}, no data found, skip the symbol for now ...")
@@ -130,8 +132,8 @@ class TradingEngine:
                     self.application_state.get('results').get('result_pad')[symbol] = {
                             'symbol': symbol,
                             'update_timestamp': date_utils.time_now_yyyy_mm_dd_hh_mm_ss(),
-                            'quantity': 1,
-                            'time_period': '1 min',
+                            'quantity': quantity,
+                            'time_frame': time_frame,
                             'current_price': current_price,
                         }
 
@@ -177,7 +179,7 @@ class TradingEngine:
         ws_server = await self.ws.start()
 
         # Keep existing application_state cadence unchanged unless explicitly configured.
-        state_interval_sec = self.app_config.get("interval_seconds", {}).get("application_state_streamer", 5)
+        state_interval_sec = self.app_config.get("interval_seconds", {}).get("application_state_streamer", 1)
         state_streamer = StateStreamer(self.app_config, self.application_state, self.ws, interval_sec=state_interval_sec)
         config_streamer = ConfigStreamer(self.app_config, self.application_state, self.ws, interval_sec=60)
 
@@ -195,9 +197,9 @@ class TradingEngine:
             self.do_streem_loop(interval_sec=3),
             # user_request_x.user_request_loop(self.app_config, self.application_state),
             # self.boot.data_saver_manager.run(ib, interval_sec=60),
-            # user_request_loop.fetch_user_request_loop(self.app_config, self.application_state, interval_sec=5),
-            # user_request_loop.process_common_user_request_loop(ib, self.app_config, self.application_state,interval_sec=5),
-            # user_request_helper.process_app_user_request_loop(ib, self.app_config, self.application_state,interval_sec=1),
+            user_request_loop.fetch_user_request_loop(self.app_config, self.application_state, interval_sec=5),
+            user_request_loop.process_common_user_request_loop(ib, self.app_config, self.application_state,interval_sec=5),
+            user_request_helper.process_app_user_request_loop(ib, self.app_config, self.application_state,interval_sec=1),
 
             ib_heartbeat_loop.ib_heartbeat_loop(ib, app_config=self.app_config,application_state=self.application_state, interval_seconds=60),
         )

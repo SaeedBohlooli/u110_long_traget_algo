@@ -11,9 +11,8 @@ async def initialize_application_state(ib, app_config, application_state):
     :param application_state:
     :return:
     """
-    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'MNQ'})
-    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'ZB'})
-    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'MGC'})
+    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'MNQ', 'time_frame': '1 min', 'quantity': 2})
+    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'NQ', 'time_frame': '1 day', 'quantity': 3})
 
     application_state['is_busy_time'] = False
     application_state['trading_date'] = date_utils.get_yyyymmdd()

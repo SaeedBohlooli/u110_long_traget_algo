@@ -31,6 +31,6 @@ def josnify_dfs_for_websocket(app_config, market_data):
 
         output_map[symbol] = streaming_util.convert_df_to_dic_for_stream(df_for_stream)
 
-    if app_config.get('debug'):
-        logger.info(f"output_map: {pformat(output_map)}")
+    # if app_config.get('debug'):
+    #     logger.info(f"output_map: {pformat(output_map)}")
     return output_map
