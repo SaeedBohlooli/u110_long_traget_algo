@@ -39,6 +39,7 @@ from trading_engine import user_request_helper
 
 
 from trading_utils import position_router
+from trading_utils import indicators_util
 
 
 class TradingEngine:
@@ -127,7 +128,7 @@ class TradingEngine:
                         logger.warning(f"@@@@@ {symbol}, no data found, skip the symbol for now ...")
                         continue
 
-                    indicator_helper.populate_features(symbol, df, self.app_config, self.market_data)
+                    df = indicators_util.compute_technical_indicators(self.app_config, self.application_state, symbol, df)
 
                     self.application_state.get('results').get('result_pad')[symbol] = {
                             'symbol': symbol,
@@ -136,13 +137,13 @@ class TradingEngine:
                             'time_frame': time_frame,
                             'current_price': current_price,
                         }
-
-
+                    self.market_data.data_store[symbol] = df
 
                 dfs_jsonized = json_helper.josnify_dfs_for_websocket(self.app_config, self.market_data)
                 self.market_data.data_store['dfs_jsonized'] = dfs_jsonized
 
 
+                application_state_router.add_audit_message(self.application_state, str('time'))
 
 
             except Exception as e:

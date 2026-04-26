@@ -1,10 +1,6 @@
 # cloudflared tunnel --url http://localhost:6110    https://conference-summaries-raises-street.trycloudflare.com
  # cloudflared tunnel --url http://localhost:5110   https://boundary-resumes-occupational-horses.trycloudflare.com
 
-
-
-
-
 ip: "127.0.0.1"
 port: 7497
 client_id: 110
@@ -67,18 +63,34 @@ files:
 
 symbols: ["QQQ", "AAPL", "AMD", "AMZN", "NVDA", "PLTR", "TSLA", "MU", "SPY"]
 debug: True
-indicators:
-  one:
-    name: true
-    formula: df['open_low_diff'] = df['open'] - df['low']
-  twq:
-    name: true
-    formula: df['high_close_diff'] = df['high'] - df['close']
 
-strategies:
-  one:
-    long:
-        entry:
-            - indicator: one
-        exit:
-            - indicator: one
+indicators:
+  calculation_interval_seconds: -1
+  print_last_few_rows: True
+  details:
+    one:
+      active: true
+      calculation: |
+        df['open_low_diff'] = df['open'] - df['low']
+    twq:
+      active: true
+      calculation: |
+        df['high_close_diff'] = df['high'] - df['close']
+
+
+entry_conditions:
+  print_last_few_rows: 0 #
+  long:
+    - "open_low_diff.iloc[-2] > 1.0"
+    - "high_close_diff.iloc[-2] > 1.0"
+  short:
+    - "open_low_diff.iloc[-2] < -1.0"
+    - "high_close_diff.iloc[-2] < -1.0"
+exit_conditions:
+  print_last_few_rows: 0 #
+  long:
+    - "open_low_diff.iloc[-2] > 1.0"
+    - "high_close_diff.iloc[-2] > 1.0"
+  short:
+    - "open_low_diff.iloc[-2] < -1.0"
+    - "high_close_diff.iloc[-2] < -1.0"
