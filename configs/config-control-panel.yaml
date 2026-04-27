@@ -14,6 +14,10 @@ control_panel:
       initialDelay: 1000
       maxDelay: 30000
       backoffMultiplier: 2
+    streams:
+      - application_state
+      - app_config
+      - dfs_jsonized
 
   # API configuration
   api:

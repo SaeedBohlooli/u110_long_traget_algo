@@ -65,27 +65,29 @@ symbols: ["QQQ", "AAPL", "AMD", "AMZN", "NVDA", "PLTR", "TSLA", "MU", "SPY"]
 debug: True
 
 indicators:
-  calculation_interval_seconds: -1
+  calculation_interval_seconds: 0
   print_last_few_rows: True
   details:
     one:
       active: true
       calculation: |
         df['open_low_diff'] = df['open'] - df['low']
+        df['open_low_diff_avg'] = df['open_low_diff'].rolling(30, min_periods=1).mean()
     twq:
       active: true
       calculation: |
-        df['high_close_diff'] = df['high'] - df['close']
+        df['high_open_diff'] = df['high'] - df['open']
+        df['high_open_diff_avg'] = df['high_open_diff'].rolling(30, min_periods=1).mean()
+        
 
 
 entry_conditions:
-  print_last_few_rows: 0 #
+  print_last_few_rows: False
   long:
-    - "open_low_diff.iloc[-2] > 1.0"
-    - "high_close_diff.iloc[-2] > 1.0"
+    - df['open_low_diff'].iloc[-1] >  df['open_low_diff_avg'].iloc[-1]
   short:
-    - "open_low_diff.iloc[-2] < -1.0"
-    - "high_close_diff.iloc[-2] < -1.0"
+    - df['high_open_diff'].iloc[-1] >  df['high_open_diff_avg'].iloc[-1]
+
 exit_conditions:
   print_last_few_rows: 0 #
   long:

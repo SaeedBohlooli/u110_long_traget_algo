@@ -36,6 +36,7 @@ from trading_engine import marketdata_helper
 # from trading_engine import position_helper
 # from trading_engine import pnl_helper
 from trading_engine import user_request_helper
+from trading_engine import screener_helper
 
 
 from trading_utils import position_router
@@ -139,11 +140,13 @@ class TradingEngine:
                         }
                     self.market_data.data_store[symbol] = df
 
+                    screener_helper.screen(self.app_config, self.application_state, symbol, df)
+
                 dfs_jsonized = json_helper.josnify_dfs_for_websocket(self.app_config, self.market_data)
                 self.market_data.data_store['dfs_jsonized'] = dfs_jsonized
 
 
-                application_state_router.add_audit_message(self.application_state, str('time'))
+                # application_state_router.add_audit_message(self.application_state, str('time'))
 
 
             except Exception as e:
