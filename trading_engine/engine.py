@@ -37,6 +37,7 @@ from trading_engine import marketdata_helper
 # from trading_engine import pnl_helper
 from trading_engine import user_request_helper
 from trading_engine import screener_helper
+from trading_engine import order_helper
 
 
 from trading_utils import position_router
@@ -55,12 +56,15 @@ class TradingEngine:
         self.market_data = MarketDataStore()
 
 
-    async def do_miscs(self, ib, application_state, interval_sec=60):
+    async def do_miscs(self, ib, app_config, application_state, interval_sec=60):
         while True:
             try:
                 if engine_cycle.should_exit(application_state=application_state):
                     logger.info("[do_miscs] Exiting as requested.")
                     break
+                application_state_router.populate_global_state(application_state=self.application_state)
+                if self.runtime.is_due("populate_ib_account_info", interval_sec=60 * 1):
+                    await populate_ib_account_info(ib, application_state, app_config.get("ib_account_id", ""))
 
             except Exception as e:
                 logger.warning(f"@@@ Unexpected error in do_miscs: {e}")
@@ -138,9 +142,12 @@ class TradingEngine:
                             'time_frame': time_frame,
                             'current_price': current_price,
                         }
+                    df = df[-30:]
                     self.market_data.data_store[symbol] = df
 
                     screener_helper.screen(self.app_config, self.application_state, symbol, df)
+                    await order_helper.send_order(self.app_config, self.application_state, ib)
+
 
                 dfs_jsonized = json_helper.josnify_dfs_for_websocket(self.app_config, self.market_data)
                 self.market_data.data_store['dfs_jsonized'] = dfs_jsonized
@@ -163,7 +170,7 @@ class TradingEngine:
                     logger.info("[spx_price_stream_loop] Exiting as requested.")
                     break
                 wl = self.market_data.data_store.get("dfs_jsonized", {})
-
+                logger.info(f"[do_stream_loop] started streaming ...")
                 if wl:
                     packet = {
                         "type": "dfs_jsonized",
@@ -171,6 +178,8 @@ class TradingEngine:
                         "data": wl
                     }
                     await self.ws.broadcast(packet)
+                logger.info(f"[do_stream_loop] finished streaming ...")
+
             except Exception as e:
                 logger.warning(f"Unexpected error in spx_price_stream_loop: {e}")
             await asyncio.sleep(interval_sec)
@@ -197,10 +206,10 @@ class TradingEngine:
             state_streamer.run(),
             config_streamer.run(),
             self.engine_loop(ib),
-            self.do_miscs(ib, self.application_state, interval_sec=60),
+            self.do_miscs(ib, self.app_config, self.application_state, interval_sec=60),
             self.do_streem_loop(interval_sec=3),
             # user_request_x.user_request_loop(self.app_config, self.application_state),
-            # self.boot.data_saver_manager.run(ib, interval_sec=60),
+            self.boot.data_saver_manager.run(ib, interval_sec=60),
             user_request_loop.fetch_user_request_loop(self.app_config, self.application_state, interval_sec=5),
             user_request_loop.process_common_user_request_loop(ib, self.app_config, self.application_state,interval_sec=5),
             user_request_helper.process_app_user_request_loop(ib, self.app_config, self.application_state,interval_sec=1),

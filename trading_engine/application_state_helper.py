@@ -36,6 +36,7 @@ async def initialize_application_state(ib, app_config, application_state):
 
 def initialize_application_state_for_run(app_config, application_state):
 
+    application_state['entry_signals'] = []
     # application_state['breakouts'] = {}
     # application_state['retests'] = {}
     # application_state['breakout_idx'] = {}
