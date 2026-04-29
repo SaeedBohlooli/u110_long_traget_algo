@@ -11,6 +11,9 @@ async def initialize_application_state(ib, app_config, application_state):
     :param application_state:
     :return:
     """
+    application_state["user_requests"] = []
+    application_state["user_input"] = {}
+    application_state.setdefault('user_input', {})['trader_enabled'] = False
     application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'MNQ', 'time_frame': '1 min', 'quantity': 2})
     application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'NQ', 'time_frame': '1 day', 'quantity': 3})
 

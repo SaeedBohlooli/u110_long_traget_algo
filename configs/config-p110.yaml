@@ -1,4 +1,4 @@
-# cloudflared tunnel --url http://localhost:6110    https://conference-summaries-raises-street.trycloudflare.com
+# cloudflared tunnel --url http://localhost:6110    https://current-exhaust-misc-kinds.trycloudflare.com
  # cloudflared tunnel --url http://localhost:5110   https://boundary-resumes-occupational-horses.trycloudflare.com
 
 ip: "127.0.0.1"
@@ -14,7 +14,7 @@ api_service:
   host: 127.0.0.1
 
 interval_seconds:
-  engine_loop: 5
+  engine_loop: .1
   open_trades_streamer: 1
   contract_strikes_streamer: 1
   contract_strikes_force_emit: 15
@@ -86,13 +86,11 @@ entry_conditions:
   long:
     - df['open_low_diff'].iloc[-1] >  df['open_low_diff_avg'].iloc[-1]
   short:
-    - df['high_open_diff'].iloc[-1] >  df['high_open_diff_avg'].iloc[-1]
+    - df['high_open_diff'].iloc[-1] <  df['high_open_diff_avg'].iloc[-1]
 
 exit_conditions:
-  print_last_few_rows: 0 #
+  print_last_few_rows: False
   long:
-    - "open_low_diff.iloc[-2] > 1.0"
-    - "high_close_diff.iloc[-2] > 1.0"
+    - str(df['date'].iloc[-1]) != open_candle_date
   short:
-    - "open_low_diff.iloc[-2] < -1.0"
-    - "high_close_diff.iloc[-2] < -1.0"
+    - str(df['date'].iloc[-1]) != open_candle_date

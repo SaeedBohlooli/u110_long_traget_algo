@@ -11,6 +11,7 @@ def process_user_requests(app_config, application_state):
         request_type = user_request.get('request_type', '')
         if 'ENGINE_PROCESSED' in user_request.get('status', ''):
             continue
+        logger.info(f"[process_user_requests] Processing user request: {user_request}")
         if request_type.upper() == 'ADD_TO_USER_INPUT':
             user_request['status'] += '|ENGINE_PROCESSED'
             symbol = user_request.get('symbol', '')
@@ -22,6 +23,12 @@ def process_user_requests(app_config, application_state):
                 'quantity': quantity,
                 'time_frame': time_frame,
                 'web_request_id': user_request.get('web_request_id', '')})
+        elif request_type.upper() == 'SET_TRADER_ENABLED':
+            user_request['status'] += '|ENGINE_PROCESSED'
+            application_state.setdefault('user_input', {})['trader_enabled'] = True
+        elif request_type.upper() == 'SET_TRADER_DISABLED':
+            user_request['status'] += '|ENGINE_PROCESSED'
+            application_state.setdefault('user_input', {})['trader_enabled'] = False
 
 
 async def process_app_user_request_loop(ib, app_config, application_state, interval_sec=5):
@@ -31,9 +38,9 @@ async def process_app_user_request_loop(ib, app_config, application_state, inter
                 logger.info("[process_app_user_request_loop] Exiting as requested.")
                 break
             process_user_requests(app_config, application_state)
-            logger.info("process_app_user_request_loop...")
+            logger.info("[process_app_user_request_loop]...")
             await asyncio.sleep(interval_sec)
         except Exception as e:
-            logger.warning(f"@@@ process_app_user_request_loop Unexpected error: {e}")
-            logger.error(f"@@@ process_app_user_request_loop error: {traceback.format_exc()}" )
+            logger.warning(f"[process_app_user_request_loop] @@@  Unexpected error: {e}")
+            logger.error(f"[process_app_user_request_loop] @@@ error: {traceback.format_exc()}" )
             await asyncio.sleep(interval_sec)

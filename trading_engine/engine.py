@@ -36,8 +36,10 @@ from trading_engine import marketdata_helper
 # from trading_engine import position_helper
 # from trading_engine import pnl_helper
 from trading_engine import user_request_helper
-from trading_engine import screener_helper
+from trading_engine import scanner_helper
 from trading_engine import order_helper
+from trading_engine import position_helper
+
 
 
 from trading_utils import position_router
@@ -83,7 +85,7 @@ class TradingEngine:
                 unique_run_number_X =  self.runtime.generate_unique_run_number(run_number)
                 day_of_week = self.runtime.now_day_of_week()
                 symbol_number = 0
-                logger.info(f"==================== run_number: {run_number}, unique_run_number_X: {unique_run_number_X}")
+                logger.info(f"[engine] ==================== run_number: {run_number}, unique_run_number_X: {unique_run_number_X}")
                 self.runtime.reload_runtime_config()
                 application_state_helper.initialize_application_state_for_run(self.app_config, self.application_state)
 
@@ -92,7 +94,7 @@ class TradingEngine:
                     break
 
                 if ib is None:
-                    logger.warning("ib is None... so give a try to reconnect ...")
+                    logger.warning("[engine] ib is None... so give a try to reconnect ...")
                     await asyncio.sleep(3)
                     continue
 
@@ -102,15 +104,16 @@ class TradingEngine:
                     symbol = entry.get('symbol')
                     time_frame = entry.get('time_frame')
                     quantity = entry.get('quantity')
+
                     symbol_number += 1
                     unique_run_number = f'{unique_run_number_X}-{symbol_number}'
                     self.application_state['unique_run_number'] = unique_run_number
-                    logger.warning(f"------------------- {symbol}, {unique_run_number}, {current_hh_mm_ny} ")
+                    logger.warning(f"[engine] ------------------- {symbol}, {unique_run_number}, {current_hh_mm_ny} ")
                     symbol_start_time = time.time()
 
                     application_state_helper.initialize_application_state_for_symbol_run(self.app_config, self.application_state)
 
-                    if self.runtime.is_due(f'get_nearest_future_contract_month-{symbol}'):
+                    if self.runtime.is_due(f'GET_NEAREST_FUTURE_CONTRACT_MONTH-{symbol}'):
                         contract_month = await ib_contract.get_nearest_future_contract_month(ib, symbol)
                         if contract_month is None:
                             logger.warning(f"@@@@@ {symbol}, no nearest future contract month found, skip the symbol for now ...")
@@ -119,18 +122,18 @@ class TradingEngine:
                     if self.application_state.get('contract_months').get(symbol) is None:
                         # not good one ...
                         continue
-                    if self.runtime.is_due(f'SUBSCRIBE_PRICE-{symbol}', interval_sec=60*2):
-                        contract_month = self.application_state.get('contract_months')[symbol]
+                    contract_month = self.application_state.get('contract_months')[symbol]
+                    if self.runtime.is_due(f'SUBSCRIBE_PRICE-{symbol}', interval_sec=3):
                         current_price = await ib_pricing_async.get_or_subscribe_symbol_price(ib, symbol, contract_month)
                         if current_price is None:
                             current_price = -1.0
                         self.application_state.setdefault('latest_prices', {})[symbol] = current_price
 
-                    logger.info(f"Starting get_historical_data for {symbol}")
+                    logger.info(f"[engine] Starting get_historical_data for {symbol}, {contract_month}")
                     df = await marketdata_helper.get_historical_data(ib, symbol, contract_month, self.app_config, self.application_state, time_frame=time_frame)
-                    logger.info(f"Finished get_historical_data for {symbol}")
+                    logger.info(f"[engine] Finished get_historical_data for {symbol}")
                     if df is None or len(df) ==0:
-                        logger.warning(f"@@@@@ {symbol}, no data found, skip the symbol for now ...")
+                        logger.warning(f"[engine] @@@@@ {symbol}, no data found, skip the symbol for now ...")
                         continue
 
                     df = indicators_util.compute_technical_indicators(self.app_config, self.application_state, symbol, df)
@@ -145,8 +148,9 @@ class TradingEngine:
                     df = df[-30:]
                     self.market_data.data_store[symbol] = df
 
-                    screener_helper.screen(self.app_config, self.application_state, symbol, df)
+                    scanner_helper.scan(self.app_config, self.application_state, symbol, df)
                     await order_helper.send_order(self.app_config, self.application_state, ib)
+                    await position_helper.check_exit_condition(self.app_config, self.application_state, ib, self.market_data)
 
 
                 dfs_jsonized = json_helper.josnify_dfs_for_websocket(self.app_config, self.market_data)
@@ -155,6 +159,10 @@ class TradingEngine:
 
                 # application_state_router.add_audit_message(self.application_state, str('time'))
 
+                end_time = time.time()
+                run_time_spent = round(end_time - start_time, 2)
+                logger.warning(f"[engine] ==================== unique_run_number: {unique_run_number}, run_spent_time: {run_time_spent} seconds, sleep ... {self.app_config['interval_seconds']['engine_loop']}")
+                self.application_state.setdefault("run_times", {})['engine_loop_run_time_spent'] = run_time_spent
 
             except Exception as e:
                 logger.warning(f"@@@ Unexpected error in engine_loop: {e}")
@@ -167,7 +175,7 @@ class TradingEngine:
         while True:
             try:
                 if engine_cycle.should_exit(application_state=self.application_state):
-                    logger.info("[spx_price_stream_loop] Exiting as requested.")
+                    logger.info("[do_streem_loop] Exiting as requested.")
                     break
                 wl = self.market_data.data_store.get("dfs_jsonized", {})
                 logger.info(f"[do_stream_loop] started streaming ...")

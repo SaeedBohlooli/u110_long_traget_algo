@@ -18,7 +18,9 @@ control_panel:
       - application_state
       - app_config
       - dfs_jsonized
-
+    details_sections:
+      - application_state.scanner_result
+      - application_state.app_positions_archive
   # API configuration
   api:
     endpoints:

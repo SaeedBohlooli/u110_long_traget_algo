@@ -12,14 +12,14 @@ def josnify_dfs_for_websocket(app_config, market_data):
             # Keep non-DataFrame payloads untouched (e.g., already-jsonized maps).
             output_map[symbol] = value
             if app_config.get('debug'):
-                logger.info(f"Skipping date serialization for non-DataFrame key '{symbol}' ({type(value).__name__})")
+                logger.info(f"[josnify_dfs_for_websocket] Skipping date serialization for non-DataFrame key '{symbol}' ({type(value).__name__})")
             continue
 
         df = value
         # Serialize `date` values to plain strings before JSON conversion.
         df_for_stream = df.copy()
         if app_config.get('debug'):
-            logger.info(f"df_for_stream ({symbol}) preview:\n{df_for_stream.tail(3).to_markdown()}")
+            logger.info(f"[josnify_dfs_for_websocket] ({symbol}) preview:\n{df_for_stream.tail(3).to_markdown()}")
 
         if 'date' in df_for_stream.columns:
             parsed_dates = pd.to_datetime(df_for_stream['date'], errors='coerce')

@@ -8,7 +8,7 @@ from trading_core.file_manager import FileManager
 
 async def get_historical_data(ib, symbol, contract_month, app_config, application_state, time_frame ='1 day', historical_days=''):
 
-    logger.info(f"[get_market_data], symbol: {symbol}, time_frame: {time_frame}, historical_days: {historical_days}")
+    logger.info(f"[get_historical_data], symbol: {symbol}, time_frame: {time_frame}, historical_days: {historical_days}, contract_month: {contract_month}")
     df = await ib_marketdata_async.get_stock_historical_data(
         ib,
         symbol,
@@ -19,8 +19,8 @@ async def get_historical_data(ib, symbol, contract_month, app_config, applicatio
     )
 
     if True or not application_state['is_save_time']:
-        logger.info(f"in get_market_data, start: \n{df[:2].to_markdown()}")
-        logger.info(f"in get_market_data, end: \n{df[-2:].to_markdown()}")
+        logger.info(f"[get_historical_data] start: \n{df[:2].to_markdown()}")
+        logger.info(f"[get_historical_data] end: \n{df[-2:].to_markdown()}")
     return df
 
 
