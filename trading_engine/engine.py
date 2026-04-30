@@ -44,6 +44,8 @@ from trading_engine import position_helper
 
 from trading_utils import position_router
 from trading_utils import indicators_util
+from trading_utils import order_router
+
 
 
 class TradingEngine:
@@ -149,6 +151,7 @@ class TradingEngine:
                     self.market_data.data_store[symbol] = df
 
                     scanner_helper.scan(self.app_config, self.application_state, symbol, df)
+                    await order_router.update_application_state_for_ib_open_orders(ib, self.app_config, self.application_state)
                     await order_helper.send_order(self.app_config, self.application_state, ib)
                     await position_helper.check_exit_condition(self.app_config, self.application_state, ib, self.market_data)
 

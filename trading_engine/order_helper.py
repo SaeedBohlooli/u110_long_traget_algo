@@ -6,6 +6,8 @@ from trading_engine import position_helper
 from trading_utils import ib_orders_async
 from trading_utils import ib_contract
 from trading_utils import date_utils
+from trading_utils import order_router
+
 from trading_core.runtime_manager import RuntimeManager
 async def send_order(app_config, application_state, ib):
 
@@ -14,12 +16,16 @@ async def send_order(app_config, application_state, ib):
         side = entry.get('side')
 
         if position_helper.has_open_position(application_state, symbol):
-            logger.info(f"[send_order]: Skipping order for {symbol} as there is already an open position.")
+            logger.info(f"[send_order] Skipping order for {symbol} as there is already an open position.")
             continue
 
         candle_date = entry.get('candle_date')
         if not RuntimeManager.should_run_once(f"ORDER-SENT-{candle_date}-{symbol}"):
             logger.info(f"[send_order] Skipping order for {symbol} as it has already been sent for candle date {candle_date}.")
+            continue
+
+        if order_router.any_open_order(application_state, symbol):
+            logger.info(f"[send_order] Skipping as there is already an open order for {symbol}.")
             continue
 
         order_ref = ib_orders_async.generate_order_ref(application_state.get('portfolio_id', {}),

@@ -86,7 +86,7 @@ entry_conditions:
   long:
     - df['open_low_diff'].iloc[-1] >  df['open_low_diff_avg'].iloc[-1]
   short:
-    - df['high_open_diff'].iloc[-1] <  df['high_open_diff_avg'].iloc[-1]
+    - df['high_open_diff'].iloc[-1] >  df['high_open_diff_avg'].iloc[-1]
 
 exit_conditions:
   print_last_few_rows: False

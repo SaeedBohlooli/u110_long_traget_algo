@@ -28,8 +28,7 @@ def scan(app_config, application_state, symbol, df):
                 'status': 'NEW'
 
             }
-            application_state.setdefault("scanner_result",[]).append(d )
-            application_state.setdefault("entry_signals",[]).append(d )
+            application_state.setdefault("scanner_result",[]).append(d)
+            application_state.setdefault("entry_signals",[]).append(d)
             application_state["scanner_result"] = application_state["scanner_result"][-30:] # cut to last 30 ...
-
 

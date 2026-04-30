@@ -59,3 +59,6 @@ async def check_exit_condition(app_config, application_state, ib, market_data):
         for p in needs_to_be_removed:
             application_state["app_positions"].remove(p)
             application_state.setdefault("app_positions_archive", []).append(p)
+
+    if application_state.get("app_positions_archive"):
+        application_state["app_positions_archive"] = application_state["app_positions_archive"][-60:]
