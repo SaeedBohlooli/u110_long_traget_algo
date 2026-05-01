@@ -13,7 +13,7 @@ REM ------------------------------------------------------------
 REM Optional portfolio-id (default p110)
 set PORTFOLIO_ID=p110"
 
-set CMD="call ..\.venv\Scripts\activate && python ..\trading_api\trading_api_service.py --portfolio-id %PORTFOLIO%"
+set CMD="call .venv\Scripts\activate && python trading_api\trading_api_service.py --portfolio-id %PORTFOLIO%"
 
 REM Determine repo root as parent of this bin folder
 set "SCRIPT_DIR=%~dp0"
@@ -35,6 +35,8 @@ REM Bootstrap venv if missing, then install requirements.txt
 REM ------------------------------------------------------------
 
 set "PY_EXE=%VENV_PY%"
+
+cd %ROOT%
 
 if not exist "%VENV_PY%" (
   echo [run-engine] .venv not found. Creating venv at: %VENV_DIR%
