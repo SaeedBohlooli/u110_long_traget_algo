@@ -13,6 +13,8 @@ REM ------------------------------------------------------------
 REM Optional portfolio-id (default p110)
 set PORTFOLIO_ID=p110"
 
+set CMD="call ..\.venv\Scripts\activate && python ..\trading_api\trading_api_service.py --portfolio-id %PORTFOLIO%"
+
 REM Determine repo root as parent of this bin folder
 set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%..") do set "ROOT=%%~fI"
@@ -59,9 +61,8 @@ dir
 if %errorlevel%==0 (
     echo Already running for  %KEY_1% %KEY_2%
 ) else (
-    echo Starting %SCRIPT% %PORTFOLIO%
-    rem ..\venv\Scripts\activate &&  python ..\main\main.py  --portfolio-id=%PORTFOLIO_ID%
-    start cmd /k " call ..\.venv\Scripts\activate &&  python ..\main\main.py  --portfolio-id=%PORTFOLIO_ID%"
+    echo Starting program %CMD%
+    start cmd /k %CMD%
 )
 timeout /t 5
 
