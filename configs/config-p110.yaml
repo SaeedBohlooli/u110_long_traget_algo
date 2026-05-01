@@ -61,7 +61,9 @@ files:
   screening_summary_for_all_sub_runs_agg_df: "{results}/25-screening_summary_for_all_sub_runs_agg_df.csv" # TODO rename
   test_df: "{results}/99-test_df.csv"
 
-symbols: ["QQQ", "AAPL", "AMD", "AMZN", "NVDA", "PLTR", "TSLA", "MU", "SPY"]
+market:
+  trading_hours: 930 <= current_hh_mm_ny < 1600
+
 debug: True
 
 indicators:

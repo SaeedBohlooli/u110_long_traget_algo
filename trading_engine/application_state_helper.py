@@ -15,7 +15,7 @@ async def initialize_application_state(ib, app_config, application_state):
     application_state["user_input"] = {}
     application_state.setdefault('user_input', {})['trader_enabled'] = False
     application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'MNQ', 'time_frame': '1 min', 'quantity': 2})
-    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'NQ', 'time_frame': '1 day', 'quantity': 3})
+    application_state.setdefault('user_input', {}).setdefault('entries', []).append({'symbol': 'NQ', 'time_frame': '1 hour', 'quantity': 3})
 
     application_state['is_busy_time'] = False
     application_state['trading_date'] = date_utils.get_yyyymmdd()

@@ -69,6 +69,7 @@ class TradingEngine:
                 application_state_router.populate_global_state(application_state=self.application_state)
                 if self.runtime.is_due("populate_ib_account_info", interval_sec=60 * 1):
                     await populate_ib_account_info(ib, application_state, app_config.get("ib_account_id", ""))
+                    position_router.update_application_state_for_ib_positions(ib, application_state)
 
             except Exception as e:
                 logger.warning(f"@@@ Unexpected error in do_miscs: {e}")
@@ -98,6 +99,13 @@ class TradingEngine:
                 if ib is None:
                     logger.warning("[engine] ib is None... so give a try to reconnect ...")
                     await asyncio.sleep(3)
+                    continue
+                if self.runtime.should_run_once('init_market_session_time'):
+                    await market_session_guard.init_market_session_time(ib, self.app_config, self.application_state)
+
+                if not market_session_guard.can_do_trade_now(self.app_config, self.application_state) :
+                    logger.warning("[engine] @ Not in trading hours ... so sleep ...")
+                    await asyncio.sleep(self.app_config['interval_seconds']['engine_loop'])
                     continue
 
                 self.app_config = self.runtime.reload_config()

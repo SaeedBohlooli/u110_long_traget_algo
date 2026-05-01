@@ -29,7 +29,19 @@ def process_user_requests(app_config, application_state):
         elif request_type.upper() == 'SET_TRADER_DISABLED':
             user_request['status'] += '|ENGINE_PROCESSED'
             application_state.setdefault('user_input', {})['trader_enabled'] = False
-
+        elif request_type.upper() == 'REMOVE_FROM_USER_INPUT':
+            user_request['status'] += '|ENGINE_PROCESSED'
+            symbol = user_request.get('symbol', '')
+            for x in application_state.get("user_input", {}).get("entries", []):
+                if x.get('symbol') == symbol:
+                    logger.info(f"[process_user_requests] Removing from user input: {user_request}")
+                    application_state.get('user_input').get('entries').remove(x)
+                    break
+            for s, x in application_state.get("results", {}).get("result_pad", {}).items():
+                if s == symbol:
+                    logger.info(f"[process_user_requests] Removing from results_pad: {user_request}")
+                    application_state.get('results').get('result_pad').pop(s, None)
+                    break
 
 async def process_app_user_request_loop(ib, app_config, application_state, interval_sec=5):
     while True:

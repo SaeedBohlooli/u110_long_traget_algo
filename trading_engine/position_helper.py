@@ -33,7 +33,7 @@ async def check_exit_condition(app_config, application_state, ib, market_data):
                 break
 
         if not application_state.get("user_input").get("trader_enabled", True):
-            logger.info(f"[check_exit_condition] Trader is disabled by user input, so closing all positions.")
+            logger.info(f"[check_exit_condition] Trader is disabled by user input, so closing all positions. open_order_ref: {p["open_order_ref"]}")
             result = True
 
         if result:
