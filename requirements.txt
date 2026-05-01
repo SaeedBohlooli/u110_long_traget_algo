@@ -2,7 +2,6 @@ pandas
 numpy
 pandas_datareader
 alpha_vantage
-tensorflow
 matplotlib
 yfinance
 html5lib
