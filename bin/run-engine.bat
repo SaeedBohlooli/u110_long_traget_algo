@@ -13,7 +13,7 @@ REM ------------------------------------------------------------
 REM Optional portfolio-id (default p110)
 set PORTFOLIO_ID=p110"
 
-set CMD="call .venv\Scripts\activate && python trading_api\trading_api_service.py --portfolio-id %PORTFOLIO_ID%"
+set CMD="call ..\.venv\Scripts\activate && python ..\main\main.py --portfolio-id %PORTFOLIO_ID%"
 
 REM Determine repo root as parent of this bin folder
 set "SCRIPT_DIR=%~dp0"
@@ -53,19 +53,9 @@ if not exist "%VENV_PY%" (
 ) else (
   echo [run-engine] .venv found at: %VENV_DIR%
 )
-
-set KEY_1=main.py
-set KEY_2=p102
-
-wmic process where "name='python.exe' and CommandLine like '%%%KEY_1%%%' and CommandLine like '%%%KEY_2%%%'" get ProcessId | findstr [0-9] >nul
-
-dir
-if %errorlevel%==0 (
-    echo Already running for  %KEY_1% %KEY_2%
-) else (
-    echo Starting program %CMD%
-    start cmd /k %CMD%
-)
+echo %CMD%
+cd bin
+start cmd /k %CMD%
 timeout /t 5
 
 
