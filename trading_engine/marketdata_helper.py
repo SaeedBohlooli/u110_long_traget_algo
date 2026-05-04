@@ -18,7 +18,7 @@ async def get_historical_data(ib, symbol, contract_month, app_config, applicatio
         use_RTH=False
     )
 
-    if True or not application_state['is_save_time']:
+    if True or not application_state['is_save_time'] and app_config.get('historical_data', {}).get('print_last_few_rows', True):
         logger.info(f"[get_historical_data] start: \n{df[:2].to_markdown()}")
         logger.info(f"[get_historical_data] end: \n{df[-2:].to_markdown()}")
     return df

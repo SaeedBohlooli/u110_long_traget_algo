@@ -86,6 +86,7 @@ class TradingEngine:
                 run_number += 1
                 current_hh_mm_ny = self.runtime.now_hhmm()
                 unique_run_number_X =  self.runtime.generate_unique_run_number(run_number)
+                unique_run_number = f'{unique_run_number_X}-0'
                 day_of_week = self.runtime.now_day_of_week()
                 symbol_number = 0
                 logger.info(f"[engine] ==================== run_number: {run_number}, unique_run_number_X: {unique_run_number_X}")
@@ -109,7 +110,7 @@ class TradingEngine:
                     continue
 
                 self.app_config = self.runtime.reload_config()
-
+                need_to_be_removed_from_user_input = []
                 for entry in self.application_state.get('user_input', {}).get('entries', []):
                     symbol = entry.get('symbol')
                     time_frame = entry.get('time_frame')
@@ -127,6 +128,8 @@ class TradingEngine:
                         contract_month = await ib_contract.get_nearest_future_contract_month(ib, symbol)
                         if contract_month is None:
                             logger.warning(f"@@@@@ {symbol}, no nearest future contract month found, skip the symbol for now ...")
+                            need_to_be_removed_from_user_input.append(entry)
+                            application_state_router.add_audit_message(self.application_state, f"{symbol} is not a valid symbol. Please check and submit again")
                             continue
                         self.application_state.setdefault('contract_months',{})[symbol] = contract_month
                     if self.application_state.get('contract_months').get(symbol) is None:
@@ -163,6 +166,8 @@ class TradingEngine:
                     await order_helper.send_order(self.app_config, self.application_state, ib)
                     await position_helper.check_exit_condition(self.app_config, self.application_state, ib, self.market_data)
 
+                for e in need_to_be_removed_from_user_input:
+                    self.application_state.get('user_input', {}).get('entries', []).remove(e)
 
                 dfs_jsonized = json_helper.josnify_dfs_for_websocket(self.app_config, self.market_data)
                 self.market_data.data_store['dfs_jsonized'] = dfs_jsonized

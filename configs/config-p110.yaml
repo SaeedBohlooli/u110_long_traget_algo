@@ -68,14 +68,14 @@ debug: True
 
 indicators:
   calculation_interval_seconds: 0
-  print_last_few_rows: True
+  print_last_few_rows: False
   details:
     one:
       active: true
       calculation: |
         df['open_low_diff'] = df['open'] - df['low']
         df['open_low_diff_avg'] = df['open_low_diff'].rolling(30, min_periods=1).mean()
-    twq:
+    two:
       active: true
       calculation: |
         df['high_open_diff'] = df['high'] - df['open']
@@ -96,3 +96,6 @@ exit_conditions:
     - str(df['date'].iloc[-1]) != open_candle_date
   short:
     - str(df['date'].iloc[-1]) != open_candle_date
+
+historical_data:
+  print_last_few_rows: False
