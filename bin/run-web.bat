@@ -3,6 +3,10 @@
 
 set "SCRIPT_DIR=%~dp0"
 
-cd  %SCRIPT%\..\u110_long_traget_algo_ux && start cmd /k "npm run dev"
+echo %SCRIPT_DIR%
+cd %SCRIPT_DIR%\..\..\u110_long_traget_algo_ux && start cmd /k "npm run dev"
 
-start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" "http://localhost:7102/"
+
+rem start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" "http://localhost:7102/"
+
+
