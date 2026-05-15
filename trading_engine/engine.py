@@ -104,7 +104,8 @@ class TradingEngine:
                 if self.runtime.should_run_once('init_market_session_time'):
                     await market_session_guard.init_market_session_time(ib, self.app_config, self.application_state)
 
-                if not market_session_guard.can_do_trade_now(self.app_config, self.application_state) :
+                # if not market_session_guard.can_do_trade_now(self.app_config, self.application_state) :
+                if not market_session_guard.is_trading_hours_based_on_config(self.app_config, self.application_state) :
                     logger.warning("[engine] @ Not in trading hours ... so sleep ...")
                     await asyncio.sleep(self.app_config['interval_seconds']['engine_loop'])
                     continue
